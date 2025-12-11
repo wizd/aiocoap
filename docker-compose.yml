@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  aiocoap-proxy:
+    build: .
+    ports:
+      - "5684:5684/udp"
+    environment:
+      BACKEND_URI: "${BACKEND_URI}"
+      PSK_API_URL: "${PSK_API_URL}"
+      BIND: "${BIND:-:5684}"
+    restart: unless-stopped
+
