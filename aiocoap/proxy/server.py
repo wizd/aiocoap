@@ -320,7 +320,8 @@ class ProxyWithPooledObservations(Proxy, interfaces.ObservableResource):
             cached_response = clientobservationrequest.__latest_response
             cached_response.mid = None
             cached_response.token = None
-            cached_response.remote = None
+            # 保留 remote，避免 get_request_uri 计算 netloc 失败
+            cached_response.remote = request.remote
             cached_response.mtype = None
             return cached_response
 

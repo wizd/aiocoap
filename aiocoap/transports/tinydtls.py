@@ -284,7 +284,15 @@ class DTLSClientConnection(interfaces.EndpointAddress):
         try:
             message = Message.decode(data, self)
         except error.UnparsableMessage:
-            self.log.warning("Ignoring unparsable message from %s", sender)
+            # 帮助定位握手/数据格式问题，打印数据长度与前 64 字节十六进制
+            hex_preview = data[:64].hex()
+            self.log.warning(
+                "Ignoring unparsable message from %s len=%d hex=%s%s",
+                sender,
+                len(data),
+                hex_preview,
+                "…" if len(data) > 64 else "",
+            )
             return len(data)
 
         self.coaptransport.ctx.dispatch_message(message)
@@ -306,6 +314,8 @@ class DTLSClientConnection(interfaces.EndpointAddress):
         return len(data)
 
     def _event(self, level, code):
+        # 记录 DTLS 状态变化，便于诊断握手问题
+        self.log.debug("DTLS event level=%d code=%d", level, code)
         if (level, code) == (LEVEL_NOALERT, DTLS_EVENT_CONNECT):
             return
         elif (level, code) == (LEVEL_NOALERT, DTLS_EVENT_CONNECTED):
